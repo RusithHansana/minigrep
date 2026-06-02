@@ -2,6 +2,7 @@
 //!
 //! Usage: cargo run -- <query> <file_path>
 //! Example: cargo run -- hello hello.txt
+use minigrep::search;
 use std::env;
 use std::error::Error;
 use std::fs;
@@ -48,7 +49,9 @@ impl Config {
 fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let content = fs::read_to_string(config.file_path)?;
 
-    println!("with content: \n {content}");
+    for line in search(&config.query, &content) {
+        println!("{line}");
+    }
 
     Ok(())
 }
