@@ -3,6 +3,7 @@
 //! Usage: cargo run -- <query> <file_path>
 //! Example: cargo run -- hello hello.txt
 use std::env;
+use std::error::Error;
 use std::fs;
 use std::process;
 
@@ -20,11 +21,10 @@ fn main() {
 
     println!("Searching for {} in {}", config.query, config.file_path);
 
-    // Read the file contents
-    // Returns: std::io::Result<String>
-    let content = fs::read_to_string(config.file_path).expect("Error while reading the file!");
-
-    println!("with content: \n{content}");
+    if let Err(e) = run(config) {
+        println!("Application error: {e}");
+        process::exit(1);
+    }
 }
 
 struct Config {
@@ -43,4 +43,12 @@ impl Config {
 
         Ok(Config { query, file_path })
     }
+}
+
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let content = fs::read_to_string(config.file_path)?;
+
+    println!("with content: \n {content}");
+
+    Ok(())
 }
