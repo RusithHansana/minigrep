@@ -4,6 +4,7 @@
 //! Example: cargo run -- hello hello.txt
 use std::env;
 use std::fs;
+use std::process;
 
 fn main() {
     // Collects command line arguments as a vector of `String`
@@ -12,7 +13,10 @@ fn main() {
     // arg()[2] - is the file path
     let args: Vec<String> = env::args().collect();
 
-    let config = Config::new(&args);
+    let config = Config::build(&args).unwrap_or_else(|err| {
+        println!("Problem while parsing the arguments: {err}");
+        process::exit(1);
+    });
 
     println!("Searching for {} in {}", config.query, config.file_path);
 
@@ -29,39 +33,14 @@ struct Config {
 }
 
 impl Config {
-    /// Creates a new `Config` instance from command line arguments.
-    ///
-    /// # Arguments
-    ///
-    /// * `args` - A slice of strings containing the command line arguments
-    ///            where `args[0]` is the program name, `args[1]` is the search
-    ///            query and `args[2]` is the file path.
-    ///
-    /// # Returns
-    ///
-    /// A new `Config` instance with owned `query` and `file_path` strings.
-    ///
-    /// # Panics
-    ///
-    /// Panics if fewer than 3 arguments are provided.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let args = vec![
-    ///     String::from("program"),
-    ///     String::from("hello"),
-    ///     String::from("hello.txt"),
-    /// ];
-    ///
-    /// let config = Config::new(&args);
-    /// assert_eq!(config.query, "hello");
-    /// assert_eq!(config.file_path, "hello.txt");
-    /// ```
-    fn new(args: &[String]) -> Config {
+    fn build(args: &[String]) -> Result<Config, &'static str> {
+        if args.len() < 3 {
+            return Err("Expected a query and a file path");
+        }
+
         let query = args[1].clone();
         let file_path = args[2].clone();
 
-        Config { query, file_path }
+        Ok(Config { query, file_path })
     }
 }
